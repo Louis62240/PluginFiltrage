@@ -4,6 +4,8 @@ from typing import List, Dict
 
 def convert_to_int(number_str: str) -> int:
     """Convertit les nombres abrégés (ex: 1.5K, 2K) en entiers."""
+    if not number_str or number_str == "":
+        return 0  # Retourne 0 si la chaîne est vide ou None
     number_str = number_str.replace(",", "")
     if "K" in number_str:
         return int(float(number_str.replace("K", "")) * 1000)
@@ -24,8 +26,18 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
             user_handle = tweet_element.query_selector("div > div > div > a > div > div > span").inner_text() if tweet_element.query_selector("div > div > div > a > div > div > span") else ""
             retweet_count_str = tweet_element.query_selector("[data-testid='retweet']").inner_text() if tweet_element.query_selector("[data-testid='retweet']") else "0"
             like_count_str = tweet_element.query_selector("[data-testid='like']").inner_text() if tweet_element.query_selector("[data-testid='like']") else "0"
+
+            # Récupérer les images
             image_elements = tweet_element.query_selector_all("div[aria-label='Image'] img")
             tweet_images = [img.get_attribute("src") for img in image_elements] if image_elements else []
+
+            # Récupérer les vidéos : essayer avec <video>, <iframe>, ou d'autres balises possibles
+            video_elements = tweet_element.query_selector_all("video")
+            iframe_elements = tweet_element.query_selector_all("iframe")
+            
+            # Récupérer les vidéos depuis les balises vidéo ou iframe
+            tweet_videos = [video.get_attribute("src") for video in video_elements if video.get_attribute("src")] if video_elements else []
+            tweet_iframes = [iframe.get_attribute("src") for iframe in iframe_elements if iframe.get_attribute("src")] if iframe_elements else []
 
             # Convertir les retweets et likes en entiers en tenant compte des abréviations
             retweet_count = convert_to_int(retweet_count_str)
@@ -38,7 +50,8 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
                 "profile_image_url": profile_image_url,
                 "retweets": retweet_count,
                 "likes": like_count,
-                "tweet_images": tweet_images
+                "tweet_images": tweet_images,
+                "tweet_videos": tweet_videos + tweet_iframes  # Ajouter les vidéos et les iframes potentiellement contenant des vidéos
             }
         except Exception as e:
             print(f"Erreur lors du parsing d'un tweet : {e}")
