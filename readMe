@@ -2,20 +2,9 @@
 python3 -m venv env
 
 # Activer l’environnement virtuel
-env\Scripts\activate  # (Sur Windows)
+env\Scripts\activate 
 
-# Pour travailler avec les APIs des réseaux sociaux
-pip install tweepy
-
-# Pour le traitement du langage naturel
-pip install spacy
-pip install transformers
-
-# Pour la reconnaissance d’images
-pip install tensorflow keras opencv-python
-
-
-python -m spacy download fr_core_news_sm  # Modèle français
-python -m spacy download en_core_web_sm  # Modèle anglais
+#installer playwrigth
+pip install playwright
 
 
