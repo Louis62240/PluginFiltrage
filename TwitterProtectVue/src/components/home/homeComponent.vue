@@ -1,11 +1,7 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 p-8">
+    <div >
         <div class="max-w-7xl mx-auto">
-            <h1 class="text-5xl font-extrabold mb-12 text-center">
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                    Fil d'actualité
-                </span>
-            </h1>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div v-for="tweet in tweets" :key="tweet.id"
                     :class="['rounded-3xl overflow-hidden shadow-lg transition-all duration-500 transform hover:scale-105',
@@ -76,7 +72,7 @@ export default {
         id: index + 1, // Generate unique IDs
         author: tweet.user_handle,
         username: tweet.user_handle.toLowerCase().replace(/\s+/g, ''), // Assuming username is handle in lowercase
-        authorAvatar: tweet.profile_image_url || `https://picsum.photos/200/200`, // Use profile_image_url if available, fallback to placeholder image
+        authorAvatar: tweet.profile_image_url || `https://cdn.icon-icons.com/icons2/1860/PNG/512/batman_118068.png`,
         content: tweet.text,
         isValid: tweet.isCorrect,
         likes: tweet.likes,
