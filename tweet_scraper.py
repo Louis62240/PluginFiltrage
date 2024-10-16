@@ -19,13 +19,18 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
     def parse_tweet_element(tweet_element):
         """Récupère les informations pertinentes d'un tweet affiché sur la page."""
         try:
+                
+            print(tweet_element)
             tweet_text = tweet_element.query_selector("div[lang]").inner_text() if tweet_element.query_selector("div[lang]") else ""
             timestamp = tweet_element.query_selector("time").get_attribute("datetime") if tweet_element.query_selector("time") else ""
+            profile_image_url = tweet_element.query_selector("div > div > div > a > div > div > img").get_attribute("src") if tweet_element.query_selector("div > div > div > a > div > div > img") else ""
             user_handle = tweet_element.query_selector("div > div > div > a > div > div > span").inner_text() if tweet_element.query_selector("div > div > div > a > div > div > span") else ""
             profile_image_url = tweet_element.query_selector("div > div > div > a > div > div > img").get_attribute("src") if tweet_element.query_selector("div > div > div > a > div > div > img") else ""
             retweet_count_str = tweet_element.query_selector("[data-testid='retweet']").inner_text() if tweet_element.query_selector("[data-testid='retweet']") else "0"
             like_count_str = tweet_element.query_selector("[data-testid='like']").inner_text() if tweet_element.query_selector("[data-testid='like']") else "0"
-            
+            image_elements = tweet_element.query_selector_all("div[aria-label='Image'] img")
+            tweet_images = [img.get_attribute("src") for img in image_elements] if image_elements else []
+        
             # Convertir les retweets et likes en entiers en tenant compte des abréviations
             retweet_count = convert_to_int(retweet_count_str)
             like_count = convert_to_int(like_count_str)
@@ -34,9 +39,10 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
                 "text": tweet_text,
                 "timestamp": timestamp,
                 "user_handle": user_handle,
-                "profile_image_url": profile_image_url,  # Ajouter la photo de profil de l'utilisateur
+                "profile_image_url": profile_image_url,
                 "retweets": retweet_count,
-                "likes": like_count
+                "likes": like_count,
+                "tweet_images": tweet_images
             }
         except Exception as e:
             print(f"Erreur lors du parsing d'un tweet : {e}")
