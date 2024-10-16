@@ -22,6 +22,7 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
             tweet_text = tweet_element.query_selector("div[lang]").inner_text() if tweet_element.query_selector("div[lang]") else ""
             timestamp = tweet_element.query_selector("time").get_attribute("datetime") if tweet_element.query_selector("time") else ""
             user_handle = tweet_element.query_selector("div > div > div > a > div > div > span").inner_text() if tweet_element.query_selector("div > div > div > a > div > div > span") else ""
+            profile_image_url = tweet_element.query_selector("div > div > div > a > div > div > img").get_attribute("src") if tweet_element.query_selector("div > div > div > a > div > div > img") else ""
             retweet_count_str = tweet_element.query_selector("[data-testid='retweet']").inner_text() if tweet_element.query_selector("[data-testid='retweet']") else "0"
             like_count_str = tweet_element.query_selector("[data-testid='like']").inner_text() if tweet_element.query_selector("[data-testid='like']") else "0"
             
@@ -33,6 +34,7 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
                 "text": tweet_text,
                 "timestamp": timestamp,
                 "user_handle": user_handle,
+                "profile_image_url": profile_image_url,  # Ajouter la photo de profil de l'utilisateur
                 "retweets": retweet_count,
                 "likes": like_count
             }
@@ -113,4 +115,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
