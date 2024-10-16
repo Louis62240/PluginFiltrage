@@ -1,7 +1,7 @@
 <template>
-    <div >
+    <div>
         <div class="max-w-7xl mx-auto">
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div v-for="tweet in tweets" :key="tweet.id"
                     :class="['rounded-3xl overflow-hidden shadow-lg transition-all duration-500 transform hover:scale-105',
@@ -24,19 +24,23 @@
                         </div>
                         <p class="text-lg leading-relaxed mb-4"
                             :class="tweet.isValid ? 'text-green-900' : 'text-red-900'">{{ tweet.content }}</p>
-                            <div v-if="tweet.image" class="mb-4 rounded-xl overflow-hidden relative">
-              <!-- Blur the image if the tweet is invalid and user hasn't chosen to view it -->
-              <img :src="tweet.image" :alt="'Image pour ' + tweet.content"
-                :class="['w-full h-56 object-cover transition duration-500',
-                  !tweet.showImage && !tweet.isValid ? 'blur-md filter' : '']">
-              
-              <!-- Show the toggle button to reveal/hide image on top of the blurred image -->
-              <div v-if="!tweet.isValid" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <button @click="toggleImageVisibility(tweet)" class="px-4 py-2 bg-red-500 text-white rounded-lg">
-                  {{ tweet.showImage ? 'Masquer l\'image' : 'Voir l\'image' }}
-                </button>
-              </div>
-            </div>
+                        <div v-if="tweet.image" class="mb-4 rounded-xl overflow-hidden relative">
+                            <!-- Blur the image if the tweet is invalid and user hasn't chosen to view it -->
+                            <img :src="tweet.image" :alt="'Image pour ' + tweet.content" :class="['w-full h-56 object-cover transition duration-500',
+                                !tweet.showImage && !tweet.isValid ? 'blur-md filter' : '']">
+
+                            <!-- Show the toggle button to reveal/hide image on top of the blurred image -->
+                            <div v-if="!tweet.isValid"
+                                class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                <button @click="toggleImageVisibility(tweet)"
+                                    class="px-4 py-2 bg-red-500 text-white rounded-lg">
+                                    {{ tweet.showImage ? 'Masquer l\'image' : 'Voir l\'image' }}
+                                </button>
+                            </div>
+                        </div>
+                        <div v-else-if="tweet.videos" class="mb-4">
+                            <video controls class="w-full h-56" :src="tweet.videos"></video>
+                        </div>
                         <div class="flex items-center justify-between text-sm">
                             <div class="flex space-x-6">
                                 <button @click="likeTweet(tweet)"
@@ -76,23 +80,24 @@ import tweetsData from "@/assets/json/tweets.json";
 export default {
     name: 'TweetDisplay',
     data() {
-    return {
-      tweets: tweetsData.map((tweet, index) => ({
-        id: index + 1, // Generate unique IDs
-        author: tweet.user_handle,
-        username: tweet.user_handle.toLowerCase().replace(/\s+/g, ''), // Assuming username is handle in lowercase
-        authorAvatar: tweet.profile_image_url || `https://cdn.icon-icons.com/icons2/1860/PNG/512/batman_118068.png`,
-        content: tweet.text,
-        isValid: tweet.isCorrect,
-        likes: tweet.likes,
-        retweets: tweet.retweets,
-        date: new Date(tweet.timestamp).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }),
-        image: tweet.tweet_images.length > 0 ? tweet.tweet_images[0] : null, // Use the first image if available
-        images: tweet.tweet_images, // Store all images in case you want to display multiple
-        liked: false,
-        retweeted: false
-      }))
-    };
+        return {
+            tweets: tweetsData.map((tweet, index) => ({
+                id: index + 1, // Generate unique IDs
+                author: tweet.user_handle,
+                username: tweet.user_handle.toLowerCase().replace(/\s+/g, ''), // Assuming username is handle in lowercase
+                authorAvatar: tweet.profile_image_url || `https://cdn.icon-icons.com/icons2/1860/PNG/512/batman_118068.png`,
+                content: tweet.text,
+                isValid: tweet.isCorrect,
+                likes: tweet.likes,
+                retweets: tweet.retweets,
+                date: new Date(tweet.timestamp).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }),
+                image: tweet.tweet_images.length > 0 ? tweet.tweet_images[0] : null, // Use the first image if available
+                images: tweet.tweet_images, // Store all images in case you want to display multiple
+                videos: tweet.tweet_videos.length > 0 ? tweet.tweet_videos[0] : null, // Use the first video if available
+                liked: false,
+                retweeted: false
+            }))
+        };
     },
     methods: {
         likeTweet(tweet) {
@@ -114,8 +119,8 @@ export default {
             }
         },
         toggleImageVisibility(tweet) {
-      tweet.showImage = !tweet.showImage; // Toggle visibility of the image
-    }
+            tweet.showImage = !tweet.showImage; // Toggle visibility of the image
+        }
     }
 }
 </script>
