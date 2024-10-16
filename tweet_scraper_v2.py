@@ -1,6 +1,5 @@
 import json
 from playwright.sync_api import sync_playwright
-import time
 from typing import List, Dict
 
 def convert_to_int(number_str: str) -> int:
@@ -19,18 +18,15 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
     def parse_tweet_element(tweet_element):
         """Récupère les informations pertinentes d'un tweet affiché sur la page."""
         try:
-                
-            print(tweet_element)
             tweet_text = tweet_element.query_selector("div[lang]").inner_text() if tweet_element.query_selector("div[lang]") else ""
             timestamp = tweet_element.query_selector("time").get_attribute("datetime") if tweet_element.query_selector("time") else ""
             profile_image_url = tweet_element.query_selector("div > div > div > a > div > div > img").get_attribute("src") if tweet_element.query_selector("div > div > div > a > div > div > img") else ""
             user_handle = tweet_element.query_selector("div > div > div > a > div > div > span").inner_text() if tweet_element.query_selector("div > div > div > a > div > div > span") else ""
-            profile_image_url = tweet_element.query_selector("div > div > div > a > div > div > img").get_attribute("src") if tweet_element.query_selector("div > div > div > a > div > div > img") else ""
             retweet_count_str = tweet_element.query_selector("[data-testid='retweet']").inner_text() if tweet_element.query_selector("[data-testid='retweet']") else "0"
             like_count_str = tweet_element.query_selector("[data-testid='like']").inner_text() if tweet_element.query_selector("[data-testid='like']") else "0"
             image_elements = tweet_element.query_selector_all("div[aria-label='Image'] img")
             tweet_images = [img.get_attribute("src") for img in image_elements] if image_elements else []
-        
+
             # Convertir les retweets et likes en entiers en tenant compte des abréviations
             retweet_count = convert_to_int(retweet_count_str)
             like_count = convert_to_int(like_count_str)
@@ -49,55 +45,61 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
             return None
 
     with sync_playwright() as pw:
-        # Lancer le navigateur sans connexion
-        browser = pw.chromium.launch(headless=False)
-        context = browser.new_context()
-        page = context.new_page()
+        try:
+            browser = pw.chromium.launch(headless=False)
+            context = browser.new_context()
+            page = context.new_page()
 
-        # Aller à la page de recherche des tweets "Top" de Twitter
-        search_url = f"https://twitter.com/search?q={query}&f=top"
-        print(f"Accès à l'URL : {search_url}")
-        page.goto(search_url)
-        time.sleep(5)  # Attendre que la page charge
+            # Aller à la page de recherche des tweets "Top" de Twitter
+            search_url = f"https://twitter.com/search?q={query}&f=top"
+            print(f"Accès à l'URL : {search_url}")
+            page.goto(search_url)
 
-        tweet_selector = "article[data-testid='tweet']"  # Utilisation du sélecteur article pour être plus précis
-        scroll_attempts = 0
-        max_scroll_attempts = 10  # Limiter le nombre de scrolls à 10 pour éviter la boucle infinie
+            # Augmenter le délai pour attendre que les tweets soient visibles
+            page.wait_for_selector("article[data-testid='tweet']", timeout=30000)
 
-        while len(tweets) < tweet_count and scroll_attempts < max_scroll_attempts:
-            try:
-                # Récupérer tous les tweets visibles sur la page
-                tweet_elements = page.query_selector_all(tweet_selector)
-                
-                if not tweet_elements:
-                    print(f"Aucun tweet trouvé, tentative de scrolling... ({scroll_attempts+1}/{max_scroll_attempts})")
+            tweet_selector = "article[data-testid='tweet']"
+            scroll_attempts = 0
+            max_scroll_attempts = 10  # Limiter le nombre de scrolls pour éviter la boucle infinie
+
+            while len(tweets) < tweet_count and scroll_attempts < max_scroll_attempts:
+                try:
+                    # Récupérer tous les tweets visibles sur la page
+                    tweet_elements = page.query_selector_all(tweet_selector)
+                    
+                    if not tweet_elements:
+                        print(f"Aucun tweet trouvé, tentative de scrolling... ({scroll_attempts+1}/{max_scroll_attempts})")
+                        scroll_attempts += 1
+                    else:
+                        print(f"{len(tweet_elements)} tweets trouvés lors du scroll {scroll_attempts+1}")
+
+                    for tweet_element in tweet_elements:
+                        tweet_data = parse_tweet_element(tweet_element)
+                        if tweet_data and tweet_data not in tweets:
+                            print(f"Ajout d'un tweet : {tweet_data['text'][:30]}...")
+                            tweets.append(tweet_data)
+                            if len(tweets) >= tweet_count:
+                                break
+
+                    # Scrolling vers le bas pour charger plus de tweets
+                    page.evaluate("window.scrollBy(0, document.body.scrollHeight)")
+                    page.wait_for_selector(tweet_selector, timeout=5000)
                     scroll_attempts += 1
-                else:
-                    print(f"{len(tweet_elements)} tweets trouvés lors du scroll {scroll_attempts+1}")
 
-                for tweet_element in tweet_elements:
-                    tweet_data = parse_tweet_element(tweet_element)
-                    if tweet_data and tweet_data not in tweets:
-                        print(f"Ajout d'un tweet : {tweet_data['text'][:30]}...")  # Afficher un aperçu du tweet
-                        tweets.append(tweet_data)
-                        if len(tweets) >= tweet_count:
-                            break
+                except Exception as e:
+                    print(f"Erreur lors du scrolling ou de la récupération des tweets : {e}")
+                    scroll_attempts += 1
 
-                # Scrolling vers le bas pour charger plus de tweets
-                page.evaluate("window.scrollBy(0, document.body.scrollHeight)")
-                time.sleep(3)  # Attendre un peu pour charger de nouveaux tweets
-                scroll_attempts += 1
+            # Trier les tweets par nombre de retweets et de likes en ordre décroissant
+            if tweets:
+                tweets = sorted(tweets, key=lambda x: (x['retweets'], x['likes']), reverse=True)
 
-            except Exception as e:
-                print(f"Erreur lors du scrolling ou de la récupération des tweets : {e}")
-                break
+        except Exception as e:
+            print(f"Erreur lors de la navigation : {e}")
 
-        # Trier les tweets par nombre de retweets et de likes en ordre décroissant
-        if tweets:
-            tweets = sorted(tweets, key=lambda x: (x['retweets'], x['likes']), reverse=True)
-
-        # Fermeture du navigateur après avoir récupéré les tweets
-        browser.close()
+        finally:
+            # Toujours fermer le navigateur pour éviter les fuites de mémoire
+            browser.close()
 
     return tweets[:tweet_count]  # Retourner les tweets récupérés, limités au nombre requis
 
