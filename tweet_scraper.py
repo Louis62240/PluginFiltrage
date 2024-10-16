@@ -3,6 +3,16 @@ from playwright.sync_api import sync_playwright
 import time
 from typing import List, Dict
 
+def convert_to_int(number_str: str) -> int:
+    """Convertit les nombres abrégés (ex: 1.5K, 2K) en entiers."""
+    number_str = number_str.replace(",", "")
+    if "K" in number_str:
+        return int(float(number_str.replace("K", "")) * 1000)
+    elif "M" in number_str:
+        return int(float(number_str.replace("M", "")) * 1000000)
+    else:
+        return int(number_str)
+
 def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
     tweets = []
 
@@ -12,15 +22,19 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
             tweet_text = tweet_element.query_selector("div[lang]").inner_text() if tweet_element.query_selector("div[lang]") else ""
             timestamp = tweet_element.query_selector("time").get_attribute("datetime") if tweet_element.query_selector("time") else ""
             user_handle = tweet_element.query_selector("div > div > div > a > div > div > span").inner_text() if tweet_element.query_selector("div > div > div > a > div > div > span") else ""
-            retweet_count = tweet_element.query_selector("[data-testid='retweet']").inner_text() if tweet_element.query_selector("[data-testid='retweet']") else "0"
-            like_count = tweet_element.query_selector("[data-testid='like']").inner_text() if tweet_element.query_selector("[data-testid='like']") else "0"
+            retweet_count_str = tweet_element.query_selector("[data-testid='retweet']").inner_text() if tweet_element.query_selector("[data-testid='retweet']") else "0"
+            like_count_str = tweet_element.query_selector("[data-testid='like']").inner_text() if tweet_element.query_selector("[data-testid='like']") else "0"
+            
+            # Convertir les retweets et likes en entiers en tenant compte des abréviations
+            retweet_count = convert_to_int(retweet_count_str)
+            like_count = convert_to_int(like_count_str)
             
             return {
                 "text": tweet_text,
                 "timestamp": timestamp,
                 "user_handle": user_handle,
-                "retweets": int(retweet_count.replace(",", "")) if retweet_count else 0,
-                "likes": int(like_count.replace(",", "")) if like_count else 0
+                "retweets": retweet_count,
+                "likes": like_count
             }
         except Exception as e:
             print(f"Erreur lors du parsing d'un tweet : {e}")
@@ -99,3 +113,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
