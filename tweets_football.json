@@ -4,13 +4,15 @@
         "timestamp": "2024-10-13T07:53:53.000Z",
         "user_handle": "Troll Football (parody)",
         "retweets": 68,
-        "likes": 809
+        "likes": 809,
+        "isCorrect": true
     },
     {
         "text": "RGO MAX BUSINESS\nhttps://rekt.fr/produit/rekt-rgo-max-business/?twclid=2-6xk5umrrbr5jdyv36wgesrtt4…\n\n Ergonomie : S'adapte à toutes les morphologies.\n 8 fonctionnalités de réglage de la position.\n Durabilité extrême.\n\n Livraison gratuite et rapide en France métropolitaine.",
         "timestamp": "",
         "user_handle": "REKT ",
         "retweets": 4,
-        "likes": 41
+        "likes": 41,
+        "isCorrect":false
     }
 ]
