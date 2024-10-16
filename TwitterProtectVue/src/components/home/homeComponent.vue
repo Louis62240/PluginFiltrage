@@ -71,22 +71,23 @@ import tweetsData from "@/assets/json/tweets.json";
 export default {
     name: 'TweetDisplay',
     data() {
-        return {
-            tweets: tweetsData.map((tweet, index) => ({
-                id: index + 1, // Generate unique IDs
-                author: tweet.user_handle,
-                username: tweet.user_handle.toLowerCase().replace(/\s+/g, ''), // Assuming username is handle in lowercase
-                authorAvatar: `https://picsum.photos/id/${index + 1}/200`, // Placeholder avatar images
-                content: tweet.text,
-                isValid: tweet.isCorrect,
-                likes: tweet.likes,
-                retweets: tweet.retweets,
-                date: new Date(tweet.timestamp).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }),
-                image: null, // Assuming no images provided in JSON
-                liked: false,
-                retweeted: false
-            }))
-        }
+    return {
+      tweets: tweetsData.map((tweet, index) => ({
+        id: index + 1, // Generate unique IDs
+        author: tweet.user_handle,
+        username: tweet.user_handle.toLowerCase().replace(/\s+/g, ''), // Assuming username is handle in lowercase
+        authorAvatar: tweet.profile_image_url || `https://picsum.photos/id/${index + 1}/200`, // Use profile_image_url if available, fallback to placeholder image
+        content: tweet.text,
+        isValid: tweet.isCorrect,
+        likes: tweet.likes,
+        retweets: tweet.retweets,
+        date: new Date(tweet.timestamp).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }),
+        image: tweet.tweet_images.length > 0 ? tweet.tweet_images[0] : null, // Use the first image if available
+        images: tweet.tweet_images, // Store all images in case you want to display multiple
+        liked: false,
+        retweeted: false
+      }))
+    };
     },
     methods: {
         likeTweet(tweet) {
