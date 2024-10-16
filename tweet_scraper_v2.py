@@ -106,10 +106,7 @@ def save_tweets_to_json(tweets: List[Dict], filename: str):
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(tweets, f, ensure_ascii=False, indent=4)
 
-def main():
-    query = input("Entrez un thème ou un mot-clé pour rechercher des tweets : ")
-    tweet_count = int(input("Combien de tweets souhaitez-vous récupérer ? (ex: 10) "))
-    
+def main(query: str, tweet_count: int):
     tweets = scrape_tweets_from_search(query, tweet_count)
     
     if not tweets:
@@ -118,6 +115,6 @@ def main():
         filename = f"tweets_{query}.json"
         save_tweets_to_json(tweets, filename)
         print(f"{len(tweets)} tweets ont été sauvegardés dans le fichier '{filename}'.")
-
-if __name__ == "__main__":
-    main()
+        
+# if __name__ == "__main__":
+#     main()
