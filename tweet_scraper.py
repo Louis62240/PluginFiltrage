@@ -25,6 +25,7 @@ def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
             timestamp = tweet_element.query_selector("time").get_attribute("datetime") if tweet_element.query_selector("time") else ""
             profile_image_url = tweet_element.query_selector("div > div > div > a > div > div > img").get_attribute("src") if tweet_element.query_selector("div > div > div > a > div > div > img") else ""
             user_handle = tweet_element.query_selector("div > div > div > a > div > div > span").inner_text() if tweet_element.query_selector("div > div > div > a > div > div > span") else ""
+            profile_image_url = tweet_element.query_selector("div > div > div > a > div > div > img").get_attribute("src") if tweet_element.query_selector("div > div > div > a > div > div > img") else ""
             retweet_count_str = tweet_element.query_selector("[data-testid='retweet']").inner_text() if tweet_element.query_selector("[data-testid='retweet']") else "0"
             like_count_str = tweet_element.query_selector("[data-testid='like']").inner_text() if tweet_element.query_selector("[data-testid='like']") else "0"
             image_elements = tweet_element.query_selector_all("div[aria-label='Image'] img")
@@ -120,4 +121,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
