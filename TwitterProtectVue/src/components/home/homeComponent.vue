@@ -76,7 +76,7 @@ export default {
         id: index + 1, // Generate unique IDs
         author: tweet.user_handle,
         username: tweet.user_handle.toLowerCase().replace(/\s+/g, ''), // Assuming username is handle in lowercase
-        authorAvatar: tweet.profile_image_url || `https://picsum.photos/id/${index + 1}/200`, // Use profile_image_url if available, fallback to placeholder image
+        authorAvatar: tweet.profile_image_url || `https://picsum.photos/200/200`, // Use profile_image_url if available, fallback to placeholder image
         content: tweet.text,
         isValid: tweet.isCorrect,
         likes: tweet.likes,
