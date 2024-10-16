@@ -1,71 +1,101 @@
-# tweet_scraper.py
-
+import json
 from playwright.sync_api import sync_playwright
-from typing import Dict
-import jmespath
+import time
+from typing import List, Dict
 
-def scrape_tweet(url: str) -> Dict:
-    _xhr_calls = []
-    def intercept_response(response):
-        if response.request.resource_type == "xhr":
-            _xhr_calls.append(response)
-        return response
+def scrape_tweets_from_search(query: str, tweet_count: int = 10) -> List[Dict]:
+    tweets = []
+
+    def parse_tweet_element(tweet_element):
+        """Récupère les informations pertinentes d'un tweet affiché sur la page."""
+        try:
+            tweet_text = tweet_element.query_selector("div[lang]").inner_text() if tweet_element.query_selector("div[lang]") else ""
+            timestamp = tweet_element.query_selector("time").get_attribute("datetime") if tweet_element.query_selector("time") else ""
+            user_handle = tweet_element.query_selector("div > div > div > a > div > div > span").inner_text() if tweet_element.query_selector("div > div > div > a > div > div > span") else ""
+            retweet_count = tweet_element.query_selector("[data-testid='retweet']").inner_text() if tweet_element.query_selector("[data-testid='retweet']") else "0"
+            like_count = tweet_element.query_selector("[data-testid='like']").inner_text() if tweet_element.query_selector("[data-testid='like']") else "0"
+            
+            return {
+                "text": tweet_text,
+                "timestamp": timestamp,
+                "user_handle": user_handle,
+                "retweets": int(retweet_count.replace(",", "")) if retweet_count else 0,
+                "likes": int(like_count.replace(",", "")) if like_count else 0
+            }
+        except Exception as e:
+            print(f"Erreur lors du parsing d'un tweet : {e}")
+            return None
 
     with sync_playwright() as pw:
+        # Lancer le navigateur sans connexion
         browser = pw.chromium.launch(headless=False)
-        context = browser.new_context(viewport={"width": 1920, "height": 1080})
+        context = browser.new_context()
         page = context.new_page()
-        page.on("response", intercept_response)
-        page.goto(url)
-        page.wait_for_selector("[data-testid='tweet']")
-        tweet_calls = [f for f in _xhr_calls if "TweetResultByRestId" in f.url]
-        if tweet_calls:
-            for xhr in tweet_calls:
-                try:
-                    data = xhr.json()
-                    return data['data']['tweetResult']['result']
-                except Exception as e:
-                    print(f"Error parsing XHR response: {e}")
-        else:
-            print("No relevant XHR calls found.")
-        return {}
 
-def parse_user(user_data: Dict) -> Dict:
-    return {
-        "user_id": user_data.get("rest_id"),
-        "name": jmespath.search("legacy.name", user_data),
-        "screen_name": jmespath.search("legacy.screen_name", user_data),
-        "description": jmespath.search("legacy.description", user_data),
-        "followers_count": jmespath.search("legacy.followers_count", user_data),
-        "following_count": jmespath.search("legacy.friends_count", user_data),
-        "statuses_count": jmespath.search("legacy.statuses_count", user_data),
-        "verified": jmespath.search("legacy.verified", user_data),
-        "profile_image_url": jmespath.search("legacy.profile_image_url_https", user_data),
-        "created_at": jmespath.search("legacy.created_at", user_data),
-    }
+        # Aller à la page de recherche des tweets "Top" de Twitter
+        search_url = f"https://twitter.com/search?q={query}&f=top"
+        print(f"Accès à l'URL : {search_url}")
+        page.goto(search_url)
+        time.sleep(5)  # Attendre que la page charge
 
-def parse_tweet(data: Dict) -> Dict:
-    result = jmespath.search(
-        """{
-        created_at: legacy.created_at,
-        attached_urls: legacy.entities.urls[].expanded_url,
-        attached_media: legacy.entities.media[].media_url_https,
-        tagged_users: legacy.entities.user_mentions[].screen_name,
-        tagged_hashtags: legacy.entities.hashtags[].text,
-        favorite_count: legacy.favorite_count,
-        reply_count: legacy.reply_count,
-        retweet_count: legacy.retweet_count,
-        text: legacy.full_text,
-        is_quote: legacy.is_quote_status,
-        is_retweet: legacy.retweeted,
-        language: legacy.lang,
-        user_id: legacy.user_id_str,
-        id: legacy.id_str,
-        conversation_id: legacy.conversation_id_str
-    }""", data)
+        tweet_selector = "article[data-testid='tweet']"  # Utilisation du sélecteur article pour être plus précis
+        scroll_attempts = 0
+        max_scroll_attempts = 10  # Limiter le nombre de scrolls à 10 pour éviter la boucle infinie
 
-    user_data = jmespath.search("core.user_results.result", data)
-    if user_data:
-        result["user"] = parse_user(user_data)
+        while len(tweets) < tweet_count and scroll_attempts < max_scroll_attempts:
+            try:
+                # Récupérer tous les tweets visibles sur la page
+                tweet_elements = page.query_selector_all(tweet_selector)
+                
+                if not tweet_elements:
+                    print(f"Aucun tweet trouvé, tentative de scrolling... ({scroll_attempts+1}/{max_scroll_attempts})")
+                    scroll_attempts += 1
+                else:
+                    print(f"{len(tweet_elements)} tweets trouvés lors du scroll {scroll_attempts+1}")
 
-    return result
+                for tweet_element in tweet_elements:
+                    tweet_data = parse_tweet_element(tweet_element)
+                    if tweet_data and tweet_data not in tweets:
+                        print(f"Ajout d'un tweet : {tweet_data['text'][:30]}...")  # Afficher un aperçu du tweet
+                        tweets.append(tweet_data)
+                        if len(tweets) >= tweet_count:
+                            break
+
+                # Scrolling vers le bas pour charger plus de tweets
+                page.evaluate("window.scrollBy(0, document.body.scrollHeight)")
+                time.sleep(3)  # Attendre un peu pour charger de nouveaux tweets
+                scroll_attempts += 1
+
+            except Exception as e:
+                print(f"Erreur lors du scrolling ou de la récupération des tweets : {e}")
+                break
+
+        # Trier les tweets par nombre de retweets et de likes en ordre décroissant
+        if tweets:
+            tweets = sorted(tweets, key=lambda x: (x['retweets'], x['likes']), reverse=True)
+
+        # Fermeture du navigateur après avoir récupéré les tweets
+        browser.close()
+
+    return tweets[:tweet_count]  # Retourner les tweets récupérés, limités au nombre requis
+
+def save_tweets_to_json(tweets: List[Dict], filename: str):
+    """Enregistre les tweets dans un fichier JSON."""
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(tweets, f, ensure_ascii=False, indent=4)
+
+def main():
+    query = input("Entrez un thème ou un mot-clé pour rechercher des tweets : ")
+    tweet_count = int(input("Combien de tweets souhaitez-vous récupérer ? (ex: 10) "))
+    
+    tweets = scrape_tweets_from_search(query, tweet_count)
+    
+    if not tweets:
+        print(f"Aucun tweet trouvé pour le mot-clé : {query}")
+    else:
+        filename = f"tweets_{query}.json"
+        save_tweets_to_json(tweets, filename)
+        print(f"{len(tweets)} tweets ont été sauvegardés dans le fichier '{filename}'.")
+
+if __name__ == "__main__":
+    main()

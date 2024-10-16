@@ -2,19 +2,20 @@
 from tweet_scraper import scrape_tweet, parse_tweet
 
 def main():
-    # Demander à l'utilisateur un lien de tweet
-    tweet_url = input("Entrez l'URL du tweet : ")
-
-    # Appel de la fonction scrape_tweet pour récupérer les données du tweet
-    tweet_data = scrape_tweet(tweet_url)
-
-    if tweet_data:
-        # Parser les données du tweet
-        parsed_tweet = parse_tweet(tweet_data)
-        # Afficher les résultats
-        print(parsed_tweet)
+    query = input("Entrez un thème ou un mot-clé pour rechercher des tweets : ")
+    tweet_count = int(input("Combien de tweets souhaitez-vous récupérer ? (ex: 10) "))
+    
+    tweets = scrape_tweets_from_search(query, tweet_count)
+    
+    if not tweets:
+        print(f"Aucun tweet trouvé pour le mot-clé : {query}")
     else:
-        print("Aucune donnée n'a pu être récupérée pour ce tweet.")
+        for idx, tweet in enumerate(tweets, start=1):
+            print(f"Tweet {idx}:")
+            print(f"Texte : {tweet['text']}")
+            print(f"Utilisateur : {tweet['user_handle']}")
+            print(f"Date : {tweet['timestamp']}")
+            print(f"Retweets : {tweet['retweets']}, Likes : {tweet['likes']}\n")
 
 if __name__ == "__main__":
     main()
