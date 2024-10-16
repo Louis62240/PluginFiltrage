@@ -24,10 +24,19 @@
                         </div>
                         <p class="text-lg leading-relaxed mb-4"
                             :class="tweet.isValid ? 'text-green-900' : 'text-red-900'">{{ tweet.content }}</p>
-                        <div v-if="tweet.image" class="mb-4 rounded-xl overflow-hidden">
-                            <img :src="tweet.image" :alt="'Image pour ' + tweet.content"
-                                class="w-full h-56 object-cover transition duration-500 hover:scale-110">
-                        </div>
+                            <div v-if="tweet.image" class="mb-4 rounded-xl overflow-hidden relative">
+              <!-- Blur the image if the tweet is invalid and user hasn't chosen to view it -->
+              <img :src="tweet.image" :alt="'Image pour ' + tweet.content"
+                :class="['w-full h-56 object-cover transition duration-500',
+                  !tweet.showImage && !tweet.isValid ? 'blur-md filter' : '']">
+              
+              <!-- Show the toggle button to reveal/hide image on top of the blurred image -->
+              <div v-if="!tweet.isValid" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <button @click="toggleImageVisibility(tweet)" class="px-4 py-2 bg-red-500 text-white rounded-lg">
+                  {{ tweet.showImage ? 'Masquer l\'image' : 'Voir l\'image' }}
+                </button>
+              </div>
+            </div>
                         <div class="flex items-center justify-between text-sm">
                             <div class="flex space-x-6">
                                 <button @click="likeTweet(tweet)"
@@ -103,7 +112,10 @@ export default {
                 tweet.retweets--;
                 tweet.retweeted = false;
             }
-        }
+        },
+        toggleImageVisibility(tweet) {
+      tweet.showImage = !tweet.showImage; // Toggle visibility of the image
+    }
     }
 }
 </script>
