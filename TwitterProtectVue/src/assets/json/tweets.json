@@ -4,69 +4,79 @@
         "timestamp": "2024-10-11T05:34:19.000Z",
         "user_handle": "PJM Hungary",
         "retweets": 513,
-        "likes": 1200
+        "likes": 1200,
+        "isCorrect":false
     },
     {
         "text": "𝑻𝒆𝒎𝒊 𝑭𝒂𝒈𝒃𝒆𝒏𝒍𝒆 ",
         "timestamp": "2024-10-13T13:04:58.000Z",
         "user_handle": "Beşiktaş Kadın Basketbol",
         "retweets": 67,
-        "likes": 1200
+        "likes": 1200,
+        "isCorrect":false
     },
     {
         "text": "Napaka swerte naman ng basket na yan oh... hahaha!\n—ctto —\n#MyLoveWillMakeYouDissapear \n#KimPauFirstMovie \n#KimPau #PauloAvelino #KimChiu",
         "timestamp": "2024-10-16T01:52:48.000Z",
         "user_handle": "kates",
         "retweets": 63,
-        "likes": 266
+        "likes": 266,
+        "isCorrect":false
     },
     {
         "text": "LE PARIS BASKET REMPORTE LE PREMIER MATCH DE SON HISTOIRE EN EUROLEAGUE \n\nVictoire face aux champions en titre grecs, le Panathinaikos de Mathias Lessort",
         "timestamp": "2024-10-15T20:35:04.000Z",
         "user_handle": "Locked-in",
         "retweets": 46,
-        "likes": 988
+        "likes": 988,
+        "isCorrect":true
     },
     {
         "text": "THE DECISION \n\n Congratulate Paris on their first EuroLeague win\n\n Don’t do it since it’s against Panathinaikos",
         "timestamp": "2024-10-15T20:49:19.000Z",
         "user_handle": "AS Monaco Basket EN",
         "retweets": 43,
-        "likes": 794
+        "likes": 794,
+        "isCorrect":true
     },
     {
         "text": "𝐊𝐡𝐚𝐥𝐢𝐚 𝐇𝐢𝐥𝐥𝐬𝐦𝐚𝐧 ",
         "timestamp": "2024-10-10T19:13:32.000Z",
         "user_handle": "Beşiktaş Kadın Basketbol",
         "retweets": 22,
-        "likes": 630
+        "likes": 630,
+        "isCorrect":false
     },
     {
         "text": "Non vraiment, respect au Paris Basket. Ça ne dénature pas son jeu, ça joue comme d’habitude, ça regarde le champion d’Europe dans les yeux et ça les choque en bien \n\nFranchement, régalade",
         "timestamp": "2024-10-15T19:00:14.000Z",
         "user_handle": "Locked-in",
         "retweets": 7,
-        "likes": 163
+        "likes": 163,
+        "isCorrect":false
     },
     {
         "text": "  |  La BSB League de Gazo est de retour pour une seconde édition ! \n\nRendez-vous le 03 Janvier 2024 pour un tournoi de basket 3 vs 3 à la Halle Georges Carpentier et 10.000€ en jeu",
         "timestamp": "2023-12-16T16:17:58.000Z",
         "user_handle": "Booska-P",
         "retweets": 3,
-        "likes": 36
+        "likes": 36,
+        "isCorrect":true
     },
     {
         "text": "« Ce n’est pas que je suis déçu mais je me dis ‘C’est tout ?!’ »\n\nVictor Wembanyama sur ce qui l’a le plus surpris durant son année rookie :\n\n« La façon dont les meilleurs joueurs sont vraiment, dans le bon comme dans le mauvais sens. Comment certains sont vraiment",
         "timestamp": "2024-10-16T07:11:34.000Z",
         "user_handle": "Basket-Infos",
         "retweets": 2,
-        "likes": 21
+        "likes": 21,
+        "isCorrect":false
     },
     {
         "text": "Esi basket tw mei bhee deserve krti hun ",
         "timestamp": "2024-10-09T10:22:39.000Z",
         "user_handle": "M",
         "retweets": 1,
-        "likes": 143
+        "likes": 143,
+        "isCorrect":false
     }
 ]
