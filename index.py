@@ -10,12 +10,18 @@ CORS(app)
 # Fonction pour charger les tweets existants depuis le fichier JSON
 def load_existing_tweets(filename):
     if os.path.exists(filename):
-        with open(filename, 'r', encoding='utf-8') as f:
-            try:
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
                 return json.load(f)
-            except json.JSONDecodeError:
-                return []  # Fichier vide ou corrompu
-    return []
+        except json.JSONDecodeError:
+            print(f"Erreur de décodage JSON dans le fichier {filename}.")
+            return []  # Fichier vide ou corrompu
+        except IOError as e:
+            print(f"Erreur d'entrée/sortie : {e}")
+            return []
+    else:
+        print(f"Le fichier {filename} n'existe pas.")
+        return []
 
 # Fonction pour sauvegarder des tweets dans le fichier JSON
 def save_tweets_to_json(tweets, filename):
