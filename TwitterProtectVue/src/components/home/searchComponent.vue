@@ -71,7 +71,7 @@ const query = ref('');
 const tweets = ref([]);  // Stocker les tweets récupérés
 const error = ref('');   // Stocker les erreurs
 const loadingValue = ref(false);  
-
+const tweetCount = ref(20);  // Nombre de tweets à récupérer
 // Fonction pour appeler l'API Flask pour la recherche de tweets
 const searchTwitter = async () => {
   if (!query.value || tweetCount.value <= 0) {
