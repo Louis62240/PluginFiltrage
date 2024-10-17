@@ -23,6 +23,11 @@ def load_existing_tweets(filename):
     else:
         print(f"Le fichier {filename} n'existe pas.")
         return []
+    
+# Nouvelle fonction pour effacer le contenu du fichier JSON
+def clear_tweets_file(filename):
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump([], f, ensure_ascii=False, indent=4)  # Sauvegarder une liste vide
 
 # Fonction pour sauvegarder des tweets dans le fichier JSON
 def save_tweets_to_json(tweets, filename):
@@ -34,13 +39,21 @@ def save_tweets_to_json(tweets, filename):
     # Sauvegarder tous les tweets (anciens + nouveaux)
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(updated_tweets, f, ensure_ascii=False, indent=4)
+# Nouvelle route pour effacer le fichier tweets.json
+@app.route('/api/clear_tweets', methods=['POST'])
+def clear_tweets():
+    try:
+        # Chemin relatif vers le fichier tweets.json dans le projet Vue.js
+        filename = os.path.join('TwitterProtectVue', 'src', 'assets', 'json', 'tweets.json')
 
-# Nouvelle fonction pour effacer le contenu du fichier JSON
-def clear_tweets_file(filename):
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump([], f, ensure_ascii=False, indent=4)  # Sauvegarder une liste vide
+        # Effacer le contenu du fichier tweets.json
+        clear_tweets_file(filename)
 
-# Route pour récupérer et sauvegarder les tweets
+        return jsonify({"message": "Les tweets ont été effacés avec succès."}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/tweets', methods=['POST'])
 def get_tweets():
     try:
@@ -70,21 +83,6 @@ def get_tweets():
 
         # Retourner les tweets vérifiés sous forme de JSON
         return jsonify(verified_tweets), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# Nouvelle route pour effacer le fichier tweets.json
-@app.route('/api/clear_tweets', methods=['POST'])
-def clear_tweets():
-    try:
-        # Chemin relatif vers le fichier tweets.json dans le projet Vue.js
-        filename = os.path.join('TwitterProtectVue', 'src', 'assets', 'json', 'tweets.json')
-
-        # Effacer le contenu du fichier tweets.json
-        clear_tweets_file(filename)
-
-        return jsonify({"message": "Les tweets ont été effacés avec succès."}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
