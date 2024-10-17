@@ -65,10 +65,14 @@
 import { ref } from 'vue';
 import axios from 'axios'; // Assurez-vous d'avoir installé axios avec `npm install axios`
 
-const query = ref('');
-const tweetCount = ref(10);  // Défaut de 10 tweets
+const emit = defineEmits(['loading']);
 
-// Fonction pour appeler l'API FastAPI pour la recherche de tweets
+const query = ref('');
+const tweets = ref([]);  // Stocker les tweets récupérés
+const error = ref('');   // Stocker les erreurs
+const loadingValue = ref(false);  
+
+// Fonction pour appeler l'API Flask pour la recherche de tweets
 const searchTwitter = async () => {
   if (!query.value || tweetCount.value <= 0) {
     alert('Veuillez entrer un thème et un nombre de tweets valide.');
@@ -76,13 +80,18 @@ const searchTwitter = async () => {
   }
   
   try {
-    const response = await axios.post('http://localhost:8000/search_tweets', {
-      query: query.value,        // La requête entrée par l'utilisateur
-      tweet_count: tweetCount.value  // Le nombre de tweets à récupérer
+    emit('loading', true);
+    error.value = '';  // Réinitialiser l'erreur avant chaque nouvelle recherche
+    const response = await axios.post('http://localhost:5000/api/tweets', {
+      query: query.value,  // La requête entrée par l'utilisateur
+      tweet_count: 20     // Nombre de tweets à récupérer
     });
-    console.log(response.data.tweets);  // Affiche les tweets récupérés dans la console
-  } catch (error) {
-    console.error('Erreur lors de la recherche de tweets:', error);
+    console.log(response.data)
+    emit('loading', false);
+    tweets.value = response.data;  // Mettre à jour les tweets
+  } catch (err) {
+    console.error('Erreur lors de la recherche de tweets:', err);
+    error.value = 'Erreur lors de la récupération des tweets. Veuillez réessayer.';  // Message d'erreur utilisateur
   }
 };
 
@@ -93,4 +102,14 @@ const handleInput = () => {
 
 <style scoped>
 /* Vous pouvez ajuster les styles ici pour plus de personnalisation */
+.tweets-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.tweet {
+  background-color: #f8fafc;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
 </style>
