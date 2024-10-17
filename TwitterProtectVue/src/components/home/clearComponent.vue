@@ -11,11 +11,23 @@
   </template>
   
   <script setup>
-  const emit = defineEmits(['clear']);
+  import axios from 'axios'; // Importer axios pour effectuer des requêtes HTTP
   
-  // Fonction qui émet l'événement 'clear' lorsqu'on clique sur le bouton
-  const clearTweets = () => {
-    emit('clear'); // Émettre un événement pour que le parent réinitialise les tweets
+  // Fonction pour vider les tweets via l'API Flask
+  const clearTweets = async () => {
+    try {
+      // Requête POST pour appeler l'API /api/clear_tweets et vider le fichier tweets.json
+      const response = await axios.post('http://localhost:8000/api/clear_tweets');
+  
+      if (response.status === 200) {
+        alert('Les tweets ont été effacés avec succès.');
+      } else {
+        alert('Une erreur s\'est produite lors de l\'effacement des tweets.');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression des tweets :', error);
+      alert('Erreur lors de la suppression des tweets. Veuillez réessayer.');
+    }
   };
   </script>
   
