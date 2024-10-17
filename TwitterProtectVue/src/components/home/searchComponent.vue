@@ -30,14 +30,30 @@
       </button>
     </div>
 
-    <!-- Barre pour entrer le nombre de tweets -->
+    <!-- Liste déroulante ou saisie manuelle pour le nombre de tweets -->
     <div class="relative w-full max-w-md">
-      <input
+      <select
         v-model="tweetCount"
-        type="number"
-        placeholder="Nombre de tweets à traiter"
-        class="w-full py-3 px-4 pr-12 text-gray-700 placeholder-gray-500 bg-white rounded-full shadow-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ease-in-out"
-      />
+        class="w-full py-3 px-4 pr-12 text-gray-700 bg-white rounded-full shadow-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ease-in-out"
+      >
+        <option v-for="count in tweetOptions" :key="count" :value="count">
+          {{ count }} tweets
+        </option>
+        <option value="custom">Autre...</option>
+      </select>
+
+      <!-- Champ pour le nombre de tweets personnalisé -->
+      <div v-if="tweetCount === 'custom'" class="relative mt-4">
+        <input
+          v-model.number="customTweetCount"
+          type="number"
+          placeholder="Saisir un nombre personnalisé"
+          class="w-full py-3 px-4 pr-12 text-gray-700 bg-white rounded-full shadow-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ease-in-out"
+          min="1"
+          max="1000"
+        />
+      </div>
+
       <button
         @click="searchTwitter"
         class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-blue-500 text-white rounded-full shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out"
@@ -72,9 +88,15 @@ const tweets = ref([]);  // Stocker les tweets récupérés
 const error = ref('');   // Stocker les erreurs
 const loadingValue = ref(false);  
 const tweetCount = ref(20);  // Nombre de tweets à récupérer
+const customTweetCount = ref(20);  // Nombre personnalisé à récupérer
+const tweetOptions = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]; // Options de la liste déroulante
+
 // Fonction pour appeler l'API Flask pour la recherche de tweets
 const searchTwitter = async () => {
-  if (!query.value || tweetCount.value <= 0) {
+  // Vérifier si l'option personnalisée est sélectionnée
+  let count = tweetCount.value === 'custom' ? customTweetCount.value : tweetCount.value;
+  
+  if (!query.value || count <= 0) {
     alert('Veuillez entrer un thème et un nombre de tweets valide.');
     return;
   }
@@ -82,11 +104,12 @@ const searchTwitter = async () => {
   try {
     emit('loading', true);
     error.value = '';  // Réinitialiser l'erreur avant chaque nouvelle recherche
-    const response = await axios.post('http://localhost:5000/api/tweets', {
+    const response = await axios.post('http://localhost:8000/search_tweets', {
       query: query.value,  // La requête entrée par l'utilisateur
-      tweet_count: 20     // Nombre de tweets à récupérer
+      tweet_count: count  // Nombre de tweets à récupérer
     });
-    console.log(response.data)
+
+    console.log(response.data);
     emit('loading', false);
     tweets.value = response.data;  // Mettre à jour les tweets
   } catch (err) {
