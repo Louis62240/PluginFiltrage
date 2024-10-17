@@ -3,6 +3,7 @@ import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from tweet_scraper_v2 import scrape_tweets_from_search
+from verificationTweet import process_json_file, process_tweets
 
 app = Flask(__name__)
 CORS(app)
@@ -52,14 +53,17 @@ def get_tweets():
         if not tweets:
             return jsonify({"message": f"Aucun tweet trouvé pour le mot-clé : {query}."}), 404
 
+        # Processus de vérification des tweets
+        verified_tweets = process_tweets(tweets)
+
         # Chemin relatif vers le fichier tweets.json dans le projet Vue.js
         filename = os.path.join('TwitterProtectVue', 'src', 'assets', 'json', 'tweets.json')
 
-        # Sauvegarder tous les tweets dans le fichier JSON
-        save_tweets_to_json(tweets, filename)
+        # Sauvegarder les tweets vérifiés dans le fichier JSON
+        save_tweets_to_json(verified_tweets, filename)
 
-        # Retourner les tweets sous forme de JSON
-        return jsonify(tweets), 200
+        # Retourner les tweets vérifiés sous forme de JSON
+        return jsonify(verified_tweets), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
